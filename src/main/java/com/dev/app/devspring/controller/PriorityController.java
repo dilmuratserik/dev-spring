@@ -2,23 +2,121 @@ package com.dev.app.devspring.controller;
 
 import com.dev.app.devspring.entity.Priority;
 import com.dev.app.devspring.repository.PriorityRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.EmptyResultDataAccessException;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
+// используем @RestController вместо обычного @Controller, чтобы все ответы сразу оборачивались в JSON
+// иначе пришлось бы выполнять лишнюю работу, использовать @ResponseBody для ответа, указывать тип отправки JSON
 @RestController
-@RequestMapping("/priority")
+@RequestMapping ("/priority") // базовый адрес
 public class PriorityController {
+
+    // доступ к данным из БД
     private PriorityRepository priorityRepository;
+
+    // автоматическое внедрение экземпляра класса через конструктор
+    // не используем @Autowired ля переменной класса, т.к. "Field injection is not recommended "
     public PriorityController(PriorityRepository priorityRepository) {
         this.priorityRepository = priorityRepository;
     }
-@GetMapping("/test")
-    public List<Priority> test(){
-    List<Priority>list=priorityRepository.findAll();
-    System.out.println("list"+ list);
-    return list;
+
+
+    // для тестирования адрес: http://localhost:8080/priority/test
+    @GetMapping("/test")
+    public List<Priority> test() {
+
+        List<Priority> list = priorityRepository.findAll();
+
+
+        return list; // JSON формат будет использоваться автоматически
+
     }
+
+
+    @PostMapping("/add")
+    public ResponseEntity<Priority> add(@RequestBody Priority priority) {
+
+        // проверка на обязательные параметры
+        if (priority.getId() != null && priority.getId() != 0) {
+            // id создается автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может быть конфликт уникальности значения
+            return new ResponseEntity("redundant param: id MUST be null", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // если передали пустое значение title
+        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
+            return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // если передали пустое значение color
+        if (priority.getColor() == null || priority.getColor().trim().length() == 0) {
+            return new ResponseEntity("missed param: color", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // save работает как на добавление, так и на обновление
+        return ResponseEntity.ok(priorityRepository.save(priority));
+    }
+
+
+    @PutMapping("/update")
+    public ResponseEntity update(@RequestBody Priority priority) {
+
+        // проверка на обязательные параметры
+        if (priority.getId() == null || priority.getId() == 0) {
+            return new ResponseEntity("missed param: id", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // если передали пустое значение title
+        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
+            return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // если передали пустое значение color
+        if (priority.getColor() == null || priority.getColor().trim().length() == 0) {
+            return new ResponseEntity("missed param: color", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        // save работает как на добавление, так и на обновление
+        return ResponseEntity.ok(priorityRepository.save(priority));
+
+    }
+    // параметр id передаются не в BODY запроса, а в самом URL
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Priority> findById(@PathVariable Long id) {
+
+        Priority priority = null;
+
+        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
+        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
+        try{
+            priority = priorityRepository.findById(id).get();
+        }catch (NoSuchElementException e){ // если объект не будет найден
+            e.printStackTrace();
+            return new ResponseEntity("id="+id+" not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return  ResponseEntity.ok(priority);
+    }
+
+
+    // параметр id передаются не в BODY запроса, а в самом URL
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity delete(@PathVariable Long id) {
+
+        // можно обойтись и без try-catch, тогда будет возвращаться полная ошибка (stacktrace)
+        // здесь показан пример, как можно обрабатывать исключение и отправлять свой текст/статус
+        try {
+            priorityRepository.deleteById(id);
+        }catch (EmptyResultDataAccessException e){
+            e.printStackTrace();
+            return new ResponseEntity("id="+id+" not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+        return new ResponseEntity(HttpStatus.OK); // не возвращаем удаленный объект
+    }
+
+
 }
