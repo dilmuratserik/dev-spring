@@ -30,12 +30,13 @@ public class Priority {
         return title;
     }
 
-
     @Basic
     @Column(name = "color")
     public String getColor() {
         return color;
     }
+
+    // обратная ссылка на коллекцию Task не нужна
 
 
 }

@@ -14,7 +14,7 @@ import java.util.Date;
 public class Task {
     private Long id;
     private String title;
-    private Integer completed;
+    private Integer completed; // 1 = true, 0 = false
     private Date date;
     private Priority priority;
     private Category category;
@@ -40,7 +40,7 @@ public class Task {
     @Column(name = "completed")
     public Integer getCompleted() {
         return completed;
-    }
+    } // 1 = true, 0 = false
 
 
     @Basic
@@ -52,7 +52,7 @@ public class Task {
     // ссылка на объект Priority
     // одна задача имеет ссылку на один объект
     @ManyToOne
-    @JoinColumn(name = "priority_id", referencedColumnName = "id")
+    @JoinColumn(name = "priority_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
     public Priority getPriority() {
         return priority;
     }
@@ -60,7 +60,7 @@ public class Task {
     // ссылка на объект Category
     // одна задача имеет ссылку на один объект
     @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    @JoinColumn(name = "category_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
     public Category getCategory() {
         return category;
     }

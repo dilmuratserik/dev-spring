@@ -13,7 +13,7 @@ import javax.persistence.Id;
 @NoArgsConstructor
 @Setter
 @EqualsAndHashCode
-public class Stat {
+public class Stat { // в этой таблице всего 1 запись, которая обновляется (но никогда не удаляется)
     private Long id;
     private Long completedTotal;
     private Long uncompletedTotal;

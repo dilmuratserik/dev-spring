@@ -27,13 +27,11 @@ public class Category {
         return id;
     }
 
-
     @Basic
     @Column(name = "title")
     public String getTitle() {
         return title;
     }
-
 
     @Basic
     @Column(name = "completed_count")
@@ -41,12 +39,12 @@ public class Category {
         return completedCount;
     }
 
-
     @Basic
     @Column(name = "uncompleted_count")
     public Long getUncompletedCount() {
         return uncompletedCount;
     }
 
+    // обратная ссылка на коллекцию Task не нужна
 
 }
